@@ -16,8 +16,11 @@ const DEFAULT_SETTINGS = {
 
 // Additive column patches go here as the schema grows (Milestones 2+).
 const COLUMN_PATCHES = [
-  // Example convention — uncomment/extend as needed:
-  // `ALTER TABLE products ADD COLUMN IF NOT EXISTS seo_title TEXT`,
+  // M3 — checkout: track the Stripe Checkout Session on the order.
+  `ALTER TABLE orders ADD COLUMN IF NOT EXISTS stripe_session_id TEXT`,
+  `ALTER TABLE orders ADD COLUMN IF NOT EXISTS customer_email TEXT`,
+  // Friendly, sequential customer-facing order numbers (CEL-00001, …).
+  `CREATE SEQUENCE IF NOT EXISTS order_number_seq START 1`,
 ];
 
 async function seedSettings() {

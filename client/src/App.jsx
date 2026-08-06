@@ -1,6 +1,9 @@
 import { Routes, Route } from 'react-router-dom';
 import Storefront from './pages/Storefront';
 import ProductDetail from './pages/ProductDetail';
+import Cart from './pages/Cart';
+import CheckoutSuccess from './pages/CheckoutSuccess';
+import CheckoutCancel from './pages/CheckoutCancel';
 import AdminLogin from './pages/admin/AdminLogin';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import ProductsList from './pages/admin/ProductsList';
@@ -13,6 +16,9 @@ export default function App() {
       {/* Storefront — public */}
       <Route path="/" element={<Storefront />} />
       <Route path="/product/:slug" element={<ProductDetail />} />
+      <Route path="/cart" element={<Cart />} />
+      <Route path="/checkout/success" element={<CheckoutSuccess />} />
+      <Route path="/checkout/cancel" element={<CheckoutCancel />} />
 
       {/* Admin */}
       <Route path="/admin/login" element={<AdminLogin />} />

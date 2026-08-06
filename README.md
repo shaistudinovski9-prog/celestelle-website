@@ -24,6 +24,15 @@ npm run dev                   # server on :4000, client on :5173
 On boot the server runs `migrations/*.sql` then `patches.js` (additive columns + seeds the
 `settings` table and a bootstrap admin from `ADMIN_BOOTSTRAP_*`).
 
+### Payments (Milestone 3)
+
+Checkout uses Stripe Checkout Sessions. Set `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET`
+in `.env`; without them the storefront still runs and `/api/checkout` responds
+`503 payments_unconfigured`. Pricing is **server-authoritative** — the client sends only
+`{product_id, variant_id, qty}` and the server looks up the real prices. Orders are marked
+paid by an **idempotent** finalize shared between the Stripe webhook and the status poll, so a
+payment is recorded exactly once. Point Stripe's webhook at `POST /api/checkout/webhook`.
+
 ## Tests
 
 ```bash

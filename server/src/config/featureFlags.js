@@ -9,8 +9,10 @@ function envBool(name, def = false) {
 }
 
 module.exports = {
-  // Storefront checkout master switch (Milestone 3). Default OFF until Stripe is wired.
-  checkoutEnabled: () => envBool('CHECKOUT_ENABLED', false),
+  // Storefront checkout master switch (Milestone 3). Default ON — the real gate
+  // is whether Stripe is configured (the route 503s "payments_unconfigured"
+  // without keys). Set CHECKOUT_ENABLED=false as an emergency kill switch.
+  checkoutEnabled: () => envBool('CHECKOUT_ENABLED', true),
   // Whether the public storefront is live. Default ON.
   storefrontEnabled: () => envBool('STOREFRONT_ENABLED', true),
   envBool,

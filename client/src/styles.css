@@ -94,3 +94,32 @@ a { color: var(--accent); text-decoration: none; }
 .variant-edit input { padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; width: 100%; }
 .link-danger { background: none; border: none; color: #b4342d; cursor: pointer; font-size: 13px; }
 @media (max-width: 640px) { .variant-edit { grid-template-columns: 1fr 1fr; } }
+
+/* --- Milestone 3: cart + checkout --- */
+.store-nav { display: flex; gap: 18px; align-items: center; }
+.cart-badge {
+  display: inline-block; margin-left: 6px; min-width: 18px; padding: 0 5px;
+  border-radius: 999px; background: var(--accent); color: #fff;
+  font-size: 12px; line-height: 18px; text-align: center;
+}
+.btn-secondary {
+  display: inline-block; padding: 10px 18px; border-radius: var(--radius);
+  background: transparent; color: var(--accent); border: 1px solid var(--accent);
+  font-weight: 600; cursor: pointer;
+}
+.cta-row { display: flex; gap: 10px; flex-wrap: wrap; }
+
+.cart-line {
+  display: grid; grid-template-columns: 1fr auto auto auto; gap: 14px;
+  align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border);
+}
+.cart-line:last-child { border-bottom: none; }
+.cart-line-title a { font-weight: 600; }
+.cart-line .qty { width: 64px; padding: 8px; border: 1px solid var(--border); border-radius: 8px; }
+.cart-line-total { font-weight: 600; min-width: 72px; text-align: right; }
+
+.totals-row { display: flex; justify-content: space-between; padding: 6px 0; }
+.totals-row.total { border-top: 1px solid var(--border); margin-top: 6px; padding-top: 12px; font-weight: 700; font-size: 18px; }
+@media (max-width: 560px) {
+  .cart-line { grid-template-columns: 1fr auto; row-gap: 8px; }
+}

@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api';
 import { priceLabel, inStock } from '../lib/products';
+import StoreHeader from '../components/StoreHeader';
 
 export default function Storefront() {
   const [store, setStore] = useState({ store_name: 'Celestelle' });
@@ -19,10 +20,7 @@ export default function Storefront() {
 
   return (
     <div>
-      <header className="topbar">
-        <div className="brand">{store.store_name || 'Celestelle'}</div>
-        <nav><a href="/admin">Admin</a></nav>
-      </header>
+      <StoreHeader storeName={store.store_name || 'Celestelle'} />
       <main className="container">
         {loading ? (
           <p className="muted">Loading…</p>

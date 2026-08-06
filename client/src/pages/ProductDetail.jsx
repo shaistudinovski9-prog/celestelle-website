@@ -1,15 +1,20 @@
 // Public product detail with a variant picker (Milestone 2).
 // "Add to cart" is stubbed until Milestone 3 wires the cart + checkout.
 import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import api from '../api';
 import { effectiveUnitPrice, inStock, formatMoney } from '../lib/products';
+import { useCart } from '../context/CartContext';
+import StoreHeader from '../components/StoreHeader';
 
 export default function ProductDetail() {
   const { slug } = useParams();
+  const navigate = useNavigate();
+  const { add } = useCart();
   const [product, setProduct] = useState(null);
   const [variant, setVariant] = useState(null);
   const [status, setStatus] = useState('loading');
+  const [added, setAdded] = useState(false);
 
   useEffect(() => {
     api.get(`/products/${slug}`)
@@ -32,11 +37,23 @@ export default function ProductDetail() {
   const buyable = inStock(product, hasVariants ? variant : null);
   const unitPrice = effectiveUnitPrice(product, hasVariants ? variant : null);
 
+  const addToCart = () => {
+    add({
+      product_id: product.id,
+      variant_id: hasVariants ? variant.id : null,
+      title: hasVariants ? `${product.title} — ${variant.label}` : product.title,
+      price: Number(product.price),
+      priceDelta: hasVariants ? Number(variant.price_delta || 0) : 0,
+      slug: product.slug,
+      image_url: product.image_url,
+    });
+    setAdded(true);
+    setTimeout(() => setAdded(false), 1500);
+  };
+
   return (
     <div>
-      <header className="topbar">
-        <div className="brand"><Link to="/">Celestelle</Link></div>
-      </header>
+      <StoreHeader storeName="Celestelle" />
       <main className="container">
         <div className="detail">
           <div className="detail-media">
@@ -71,12 +88,13 @@ export default function ProductDetail() {
               </div>
             )}
 
-            <button className="btn" disabled={!buyable} title={buyable ? '' : 'Out of stock'}>
-              {buyable ? 'Add to cart' : 'Sold out'}
-            </button>
-            <p className="muted" style={{ marginTop: 10, fontSize: 13 }}>
-              Cart &amp; checkout arrive in Milestone&nbsp;3.
-            </p>
+            <div className="cta-row">
+              <button className="btn" disabled={!buyable} onClick={addToCart}
+                title={buyable ? '' : 'Out of stock'}>
+                {buyable ? (added ? 'Added ✓' : 'Add to cart') : 'Sold out'}
+              </button>
+              <button className="btn-secondary" onClick={() => navigate('/cart')}>View cart</button>
+            </div>
           </div>
         </div>
       </main>
