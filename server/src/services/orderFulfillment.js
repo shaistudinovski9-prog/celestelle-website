@@ -15,7 +15,8 @@ async function finalizeOrderPaid(orderId, { processorRef = null, method = 'strip
 
     // Row-lock the order so concurrent webhook+poll can't both finalize.
     const { rows } = await client.query(
-      'SELECT id, total, payment_status FROM orders WHERE id = $1 FOR UPDATE',
+      `SELECT id, order_number, customer_email, subtotal, tax, shipping, total, payment_status
+         FROM orders WHERE id = $1 FOR UPDATE`,
       [orderId]
     );
     const order = rows[0];
@@ -37,7 +38,7 @@ async function finalizeOrderPaid(orderId, { processorRef = null, method = 'strip
 
     // Decrement stock now that money is confirmed (never before).
     const { rows: items } = await client.query(
-      'SELECT product_id, variant_id, qty FROM order_items WHERE order_id = $1',
+      'SELECT product_id, variant_id, qty, title, line_total FROM order_items WHERE order_id = $1',
       [orderId]
     );
     for (const it of items) {
@@ -55,12 +56,27 @@ async function finalizeOrderPaid(orderId, { processorRef = null, method = 'strip
     }
 
     await client.query('COMMIT');
+
+    // Fire-and-forget order confirmation — must NEVER block or fail the money
+    // path (the payment is already committed). No-op unless a provider is set.
+    void sendConfirmationSafe(order, items);
+
     return { finalized: true, amount: plan.payment.amount };
   } catch (err) {
     await client.query('ROLLBACK');
     throw err;
   } finally {
     client.release();
+  }
+}
+
+// Isolated so a mailer require/throw can never touch the transaction above.
+async function sendConfirmationSafe(order, items) {
+  try {
+    const mailer = require('./mailer');
+    await mailer.sendOrderConfirmation({ order, items });
+  } catch (err) {
+    console.error('[orderFulfillment] confirmation email error:', err.message);
   }
 }
 

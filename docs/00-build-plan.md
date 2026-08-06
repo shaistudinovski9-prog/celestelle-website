@@ -79,5 +79,5 @@ Two surfaces (unlike RBOS's staff-only app):
 - [x] Milestone 1 — skeleton, DB layer, settings, admin auth
 - [x] Milestone 2 — catalog (products + variants; admin CRUD; storefront grid + detail)
 - [x] Milestone 3 — cart + Stripe checkout (server-authoritative pricing; idempotent fulfillment; webhook + poll)
-- [ ] Milestone 4 — fulfillment
+- [x] Milestone 4 — fulfillment (admin orders; unfulfilled→packed→shipped→delivered + tracking; order + shipment emails, provider-agnostic)
 - [ ] Milestone 5 — shipping/tax + polish

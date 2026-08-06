@@ -21,6 +21,10 @@ const COLUMN_PATCHES = [
   `ALTER TABLE orders ADD COLUMN IF NOT EXISTS customer_email TEXT`,
   // Friendly, sequential customer-facing order numbers (CEL-00001, …).
   `CREATE SEQUENCE IF NOT EXISTS order_number_seq START 1`,
+  // M4 — fulfillment: shipment tracking + timestamps on the order.
+  `ALTER TABLE orders ADD COLUMN IF NOT EXISTS tracking_number TEXT`,
+  `ALTER TABLE orders ADD COLUMN IF NOT EXISTS tracking_url TEXT`,
+  `ALTER TABLE orders ADD COLUMN IF NOT EXISTS shipped_at TIMESTAMPTZ`,
 ];
 
 async function seedSettings() {

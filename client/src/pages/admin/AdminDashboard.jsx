@@ -15,8 +15,11 @@ export default function AdminDashboard() {
       <main className="container">
         <div className="card">
           <h1>Dashboard</h1>
-          <p className="muted">Manage your catalog. Orders management arrives in Milestone&nbsp;4.</p>
-          <p><Link className="btn" to="/admin/products">Manage products</Link></p>
+          <p className="muted">Manage your catalog and orders.</p>
+          <p style={{ display: 'flex', gap: 10 }}>
+            <Link className="btn" to="/admin/products">Manage products</Link>
+            <Link className="btn-secondary" to="/admin/orders">View orders</Link>
+          </p>
         </div>
       </main>
     </div>

@@ -123,3 +123,19 @@ a { color: var(--accent); text-decoration: none; }
 @media (max-width: 560px) {
   .cart-line { grid-template-columns: 1fr auto; row-gap: 8px; }
 }
+
+/* --- Milestone 4: fulfillment / status badges --- */
+.badge {
+  display: inline-block; padding: 3px 10px; border-radius: 999px;
+  font-size: 12px; font-weight: 600; line-height: 1.6;
+}
+.badge-green { background: #e3f4e8; color: #1c7a3e; }
+.badge-blue  { background: #e2ecfb; color: #1e5bb8; }
+.badge-amber { background: #fbf0d9; color: #97671a; }
+.badge-gray  { background: #ece7df; color: #6b6459; }
+.badge-red   { background: #f7e0de; color: #b4342d; }
+
+.select {
+  width: 100%; padding: 10px 12px; border: 1px solid var(--border);
+  border-radius: var(--radius); font-size: 15px; background: var(--surface);
+}

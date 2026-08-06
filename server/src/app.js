@@ -22,6 +22,7 @@ function createApp() {
   app.use('/api/settings', require('./routes/settings'));
   app.use('/api/products', require('./routes/products'));
   app.use('/api/checkout', checkout.router);
+  app.use('/api/admin/orders', require('./routes/adminOrders'));
 
   return app;
 }

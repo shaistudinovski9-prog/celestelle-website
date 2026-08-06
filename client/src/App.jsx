@@ -8,6 +8,8 @@ import AdminLogin from './pages/admin/AdminLogin';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import ProductsList from './pages/admin/ProductsList';
 import ProductEditor from './pages/admin/ProductEditor';
+import AdminOrders from './pages/admin/AdminOrders';
+import AdminOrderDetail from './pages/admin/AdminOrderDetail';
 import RequireAuth from './pages/admin/RequireAuth';
 
 export default function App() {
@@ -26,6 +28,8 @@ export default function App() {
       <Route path="/admin/products" element={<RequireAuth><ProductsList /></RequireAuth>} />
       <Route path="/admin/products/new" element={<RequireAuth><ProductEditor /></RequireAuth>} />
       <Route path="/admin/products/:id" element={<RequireAuth><ProductEditor /></RequireAuth>} />
+      <Route path="/admin/orders" element={<RequireAuth><AdminOrders /></RequireAuth>} />
+      <Route path="/admin/orders/:id" element={<RequireAuth><AdminOrderDetail /></RequireAuth>} />
     </Routes>
   );
 }

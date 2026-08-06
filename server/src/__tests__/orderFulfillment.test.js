@@ -22,7 +22,7 @@ function makeFakeDb(initial) {
         state.order.payment_status = params[1];
         return { rows: [] };
       }
-      if (/SELECT product_id, variant_id, qty FROM order_items/.test(sql)) return { rows: state.items };
+      if (/FROM order_items WHERE order_id/.test(sql)) return { rows: state.items };
       if (/UPDATE (products|product_variants) SET stock_qty/.test(sql)) {
         state.stockUpdates.push({ sql, params });
         return { rows: [] };
