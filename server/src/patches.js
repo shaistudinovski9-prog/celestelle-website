@@ -25,6 +25,12 @@ const COLUMN_PATCHES = [
   `ALTER TABLE orders ADD COLUMN IF NOT EXISTS tracking_number TEXT`,
   `ALTER TABLE orders ADD COLUMN IF NOT EXISTS tracking_url TEXT`,
   `ALTER TABLE orders ADD COLUMN IF NOT EXISTS shipped_at TIMESTAMPTZ`,
+  // M5 — destination tax: per-state sales-tax rates (decimal, e.g. 0.0725).
+  `CREATE TABLE IF NOT EXISTS tax_rules (
+     state TEXT PRIMARY KEY,
+     rate  NUMERIC(6,4) NOT NULL DEFAULT 0,
+     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+   )`,
 ];
 
 async function seedSettings() {

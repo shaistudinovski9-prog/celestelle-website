@@ -10,6 +10,8 @@ import ProductsList from './pages/admin/ProductsList';
 import ProductEditor from './pages/admin/ProductEditor';
 import AdminOrders from './pages/admin/AdminOrders';
 import AdminOrderDetail from './pages/admin/AdminOrderDetail';
+import AdminSettings from './pages/admin/AdminSettings';
+import NotFound from './pages/NotFound';
 import RequireAuth from './pages/admin/RequireAuth';
 
 export default function App() {
@@ -30,6 +32,9 @@ export default function App() {
       <Route path="/admin/products/:id" element={<RequireAuth><ProductEditor /></RequireAuth>} />
       <Route path="/admin/orders" element={<RequireAuth><AdminOrders /></RequireAuth>} />
       <Route path="/admin/orders/:id" element={<RequireAuth><AdminOrderDetail /></RequireAuth>} />
+      <Route path="/admin/settings" element={<RequireAuth><AdminSettings /></RequireAuth>} />
+
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 }

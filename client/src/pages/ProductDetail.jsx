@@ -6,6 +6,7 @@ import api from '../api';
 import { effectiveUnitPrice, inStock, formatMoney } from '../lib/products';
 import { useCart } from '../context/CartContext';
 import StoreHeader from '../components/StoreHeader';
+import useDocumentTitle from '../hooks/useDocumentTitle';
 
 export default function ProductDetail() {
   const { slug } = useParams();
@@ -15,6 +16,10 @@ export default function ProductDetail() {
   const [variant, setVariant] = useState(null);
   const [status, setStatus] = useState('loading');
   const [added, setAdded] = useState(false);
+  useDocumentTitle(
+    product ? `${product.title} — Celestelle` : 'Celestelle',
+    product?.description || undefined
+  );
 
   useEffect(() => {
     api.get(`/products/${slug}`)

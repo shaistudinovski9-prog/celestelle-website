@@ -19,6 +19,40 @@ router.get('/public', async (req, res) => {
   });
 });
 
+// Per-state tax rules — admin only.
+router.get('/tax-rules', requireAdmin, async (req, res) => {
+  const { rows } = await db.query('SELECT state, rate FROM tax_rules ORDER BY state');
+  res.json(rows);
+});
+
+// Replace-all tax rules. Body: { rules: [{ state, rate }] }. rate is a decimal.
+router.put('/tax-rules', requireAdmin, async (req, res) => {
+  const rules = Array.isArray(req.body?.rules) ? req.body.rules : [];
+  const client = await db.getClient();
+  try {
+    await client.query('BEGIN');
+    await client.query('DELETE FROM tax_rules');
+    for (const r of rules) {
+      const state = String(r.state || '').toUpperCase().trim();
+      const rate = Number(r.rate);
+      if (!state || !Number.isFinite(rate) || rate < 0) continue;
+      await client.query(
+        `INSERT INTO tax_rules (state, rate) VALUES ($1, $2)
+         ON CONFLICT (state) DO UPDATE SET rate = EXCLUDED.rate, updated_at = NOW()`,
+        [state, rate]
+      );
+    }
+    await client.query('COMMIT');
+  } catch (err) {
+    await client.query('ROLLBACK');
+    throw err;
+  } finally {
+    client.release();
+  }
+  const { rows } = await db.query('SELECT state, rate FROM tax_rules ORDER BY state');
+  res.json(rows);
+});
+
 // Full settings map — admin only.
 router.get('/', requireAdmin, async (req, res) => {
   res.json(await settingsCache.getSettings());

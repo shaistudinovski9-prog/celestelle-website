@@ -80,4 +80,9 @@ Two surfaces (unlike RBOS's staff-only app):
 - [x] Milestone 2 — catalog (products + variants; admin CRUD; storefront grid + detail)
 - [x] Milestone 3 — cart + Stripe checkout (server-authoritative pricing; idempotent fulfillment; webhook + poll)
 - [x] Milestone 4 — fulfillment (admin orders; unfulfilled→packed→shipped→delivered + tracking; order + shipment emails, provider-agnostic)
-- [ ] Milestone 5 — shipping/tax + polish
+- [x] Milestone 5 — shipping address capture + per-state tax + admin Settings + SEO titles/meta + 404/footer polish
+
+**All 5 milestones complete.** The store runs end-to-end: browse → cart (with shipping
+address + live destination tax) → Stripe checkout → order recorded → admin fulfills →
+tracking email. Remaining before real launch: connect Stripe live keys, an email provider
+(Resend), upgrade the Render database off the free plan, and add product images.

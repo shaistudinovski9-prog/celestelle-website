@@ -7,12 +7,33 @@ const settingsCache = require('../settingsCache');
 const { checkoutEnabled } = require('../config/featureFlags');
 const { getStripe } = require('../lib/stripeClient');
 const { resolveLines, computeTotals, formatOrderNumber } = require('../lib/orders');
+const { resolveTaxRate, validateAddress } = require('../lib/tax');
 const { finalizeOrderPaid } = require('../services/orderFulfillment');
 
 const router = express.Router();
 
 function publicUrl() {
   return (process.env.PUBLIC_URL || 'http://localhost:5173').replace(/\/$/, '');
+}
+
+async function loadTaxRules() {
+  const { rows } = await db.query('SELECT state, rate FROM tax_rules');
+  return rows;
+}
+
+// Shared pricing: resolve cart + settings + destination state into totals.
+// Used by both the public quote and the real checkout so they never diverge.
+async function priceCart(items, state) {
+  const productsById = await loadProductsForCart(Array.isArray(items) ? items : []);
+  const { errors, lines } = resolveLines(items, productsById);
+  const s = await settingsCache.getSettings();
+  const rate = resolveTaxRate(state, await loadTaxRules(), settingsCache.toNum(s.tax_rate, 0));
+  const totals = computeTotals(lines, {
+    taxRate: rate,
+    flatRate: settingsCache.toNum(s.ship_flat_rate, 0),
+    freeThreshold: settingsCache.toNum(s.free_ship_threshold, 0),
+  });
+  return { errors, lines, totals, settings: s };
 }
 
 // Load the products referenced by the cart, with their variants, into a map.
@@ -32,7 +53,14 @@ async function loadProductsForCart(items) {
   return byId;
 }
 
-// POST /api/checkout — create the order (pending) + Stripe session.
+// POST /api/checkout/quote — public, no side effects. Accurate totals for a given
+// cart + destination state (drives the live tax/total in the cart UI).
+router.post('/quote', async (req, res) => {
+  const { errors, totals } = await priceCart(req.body?.items, req.body?.state);
+  res.json({ ...totals, errors });
+});
+
+// POST /api/checkout — validate address, create the order (pending) + Stripe session.
 router.post('/', async (req, res) => {
   if (!checkoutEnabled()) return res.status(503).json({ error: 'checkout_disabled' });
   const stripe = getStripe();
@@ -42,16 +70,12 @@ router.post('/', async (req, res) => {
   const email = String(req.body?.email || '').toLowerCase().trim();
   if (!email) return res.status(400).json({ error: 'email_required' });
 
-  const productsById = await loadProductsForCart(Array.isArray(items) ? items : []);
-  const { errors, lines } = resolveLines(items, productsById);
-  if (errors.length) return res.status(400).json({ error: 'cart_invalid', details: errors });
+  // Shipping address is required now — we persist it and tax depends on the state.
+  const { errors: addrErrors, value: address } = validateAddress(req.body?.address || {});
+  if (addrErrors.length) return res.status(400).json({ error: 'address_invalid', details: addrErrors });
 
-  const s = await settingsCache.getSettings();
-  const totals = computeTotals(lines, {
-    taxRate: settingsCache.toNum(s.tax_rate, 0),
-    flatRate: settingsCache.toNum(s.ship_flat_rate, 0),
-    freeThreshold: settingsCache.toNum(s.free_ship_threshold, 0),
-  });
+  const { errors, lines, totals, settings: s } = await priceCart(items, address.state);
+  if (errors.length) return res.status(400).json({ error: 'cart_invalid', details: errors });
   const currency = (s.currency || 'USD').toLowerCase();
 
   const client = await db.getClient();
@@ -79,6 +103,12 @@ router.post('/', async (req, res) => {
         [orderId, l.product_id, l.variant_id, l.title, l.qty, l.unit_price, l.line_total]
       );
     }
+    await client.query(
+      `INSERT INTO addresses (order_id, kind, name, line1, line2, city, state, postal_code, country)
+       VALUES ($1,'shipping',$2,$3,$4,$5,$6,$7,$8)`,
+      [orderId, address.name, address.line1, address.line2, address.city,
+       address.state, address.postal_code, address.country]
+    );
     await client.query('COMMIT');
   } catch (err) {
     await client.query('ROLLBACK');
@@ -87,15 +117,18 @@ router.post('/', async (req, res) => {
     client.release();
   }
 
-  // Build Stripe line items from the SERVER-computed lines (+ shipping as its own line).
+  // Build Stripe line items from the SERVER-computed lines (+ tax + shipping lines).
   const stripeLineItems = lines.map((l) => ({
     quantity: l.qty,
-    price_data: {
-      currency,
-      unit_amount: Math.round(l.unit_price * 100),
-      product_data: { name: l.title },
-    },
+    price_data: { currency, unit_amount: Math.round(l.unit_price * 100), product_data: { name: l.title } },
   }));
+  if (totals.tax > 0) {
+    stripeLineItems.push({
+      quantity: 1,
+      price_data: { currency, unit_amount: Math.round(totals.tax * 100),
+        product_data: { name: s.tax_label || 'Tax' } },
+    });
+  }
   if (totals.shipping > 0) {
     stripeLineItems.push({
       quantity: 1,
@@ -108,9 +141,7 @@ router.post('/', async (req, res) => {
     mode: 'payment',
     customer_email: email,
     line_items: stripeLineItems,
-    // Tax is already included as computed; for destination tax use Stripe Tax at M5.
     metadata: { order_id: String(orderId), order_number: orderNumber },
-    shipping_address_collection: { allowed_countries: ['US'] },
     success_url: `${publicUrl()}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${publicUrl()}/checkout/cancel?order=${encodeURIComponent(orderNumber)}`,
   });

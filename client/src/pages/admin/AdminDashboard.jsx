@@ -16,9 +16,10 @@ export default function AdminDashboard() {
         <div className="card">
           <h1>Dashboard</h1>
           <p className="muted">Manage your catalog and orders.</p>
-          <p style={{ display: 'flex', gap: 10 }}>
+          <p style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
             <Link className="btn" to="/admin/products">Manage products</Link>
             <Link className="btn-secondary" to="/admin/orders">View orders</Link>
+            <Link className="btn-secondary" to="/admin/settings">Settings</Link>
           </p>
         </div>
       </main>

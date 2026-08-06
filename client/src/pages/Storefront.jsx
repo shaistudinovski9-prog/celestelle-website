@@ -4,11 +4,16 @@ import { Link } from 'react-router-dom';
 import api from '../api';
 import { priceLabel, inStock } from '../lib/products';
 import StoreHeader from '../components/StoreHeader';
+import useDocumentTitle from '../hooks/useDocumentTitle';
 
 export default function Storefront() {
   const [store, setStore] = useState({ store_name: 'Celestelle' });
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  useDocumentTitle(
+    `${store.store_name || 'Celestelle'} — shop`,
+    `Shop ${store.store_name || 'Celestelle'} products online.`
+  );
 
   useEffect(() => {
     api.get('/settings/public').then(({ data }) => setStore(data)).catch(() => {});
@@ -48,6 +53,11 @@ export default function Storefront() {
           </div>
         )}
       </main>
+      <footer className="site-footer">
+        <div className="container muted">
+          © {new Date().getFullYear()} {store.store_name || 'Celestelle'}
+        </div>
+      </footer>
     </div>
   );
 }
