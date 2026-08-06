@@ -31,6 +31,9 @@ const COLUMN_PATCHES = [
      rate  NUMERIC(6,4) NOT NULL DEFAULT 0,
      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
    )`,
+  // Catalog import: product detail fields from the source site.
+  `ALTER TABLE products ADD COLUMN IF NOT EXISTS ingredients TEXT`,
+  `ALTER TABLE products ADD COLUMN IF NOT EXISTS how_to_use TEXT`,
 ];
 
 async function seedSettings() {
@@ -59,12 +62,39 @@ async function bootstrapAdmin() {
   console.log(`  ✓ bootstrapped admin: ${email}`);
 }
 
+// One-time catalog import from the existing celestellebeauty.com site.
+// Guarded by the `catalog_imported` settings flag so it runs exactly once, ever —
+// it will not re-seed after the owner edits/deletes products. Idempotent per row
+// via ON CONFLICT (slug) DO NOTHING as a second layer of safety.
+async function importCatalog() {
+  const { rows } = await db.query("SELECT value FROM settings WHERE key = 'catalog_imported'");
+  if (rows[0]?.value === 'true') return;
+
+  const { CATALOG } = require('./data/celestelleCatalog');
+  let inserted = 0;
+  for (const p of CATALOG) {
+    const r = await db.query(
+      `INSERT INTO products (slug, title, description, price, stock_qty, image_url, active, ingredients, how_to_use)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+       ON CONFLICT (slug) DO NOTHING`,
+      [p.slug, p.title, p.description, p.price, p.stock_qty, p.image_url, p.active, p.ingredients, p.how_to_use]
+    );
+    inserted += r.rowCount;
+  }
+  await db.query(
+    `INSERT INTO settings (key, value) VALUES ('catalog_imported', 'true')
+     ON CONFLICT (key) DO UPDATE SET value = 'true'`
+  );
+  console.log(`  ✓ catalog import: ${inserted} product(s) seeded`);
+}
+
 async function applyPatches() {
   for (const sql of COLUMN_PATCHES) {
     await db.query(sql);
   }
   await seedSettings();
   await bootstrapAdmin();
+  await importCatalog();
 }
 
-module.exports = { applyPatches, DEFAULT_SETTINGS };
+module.exports = { applyPatches, importCatalog, DEFAULT_SETTINGS };
