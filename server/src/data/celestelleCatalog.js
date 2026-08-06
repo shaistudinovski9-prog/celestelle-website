@@ -6,14 +6,14 @@ const DEFAULT_STOCK = 100;
 
 const CATALOG = [
   {
-    slug: 'starter-ritual', title: 'The Radiance Set', price: 179.00,
+    slug: 'starter-ritual', title: 'The Radiance Set', price: 179.00, compare_at_price: 207.00,
     image_url: '/images/products/starter-ritual.png',
     description: 'A complete 3-step Celestelle routine for brighter, healthier-looking skin. Cleanse, treat, and nourish with our most-loved Vitamin C line — bundled to save $28. Includes Vitamin C Cleanser, Vitamin C Serum, and Vitamin C Day Cream.',
     how_to_use: 'Cleanse, apply serum, then moisturizer. Morning and night.',
     ingredients: 'See individual products for full ingredient lists.',
   },
   {
-    slug: 'complete-ritual', title: 'The Complete Set', price: 279.00,
+    slug: 'complete-ritual', title: 'The Complete Set', price: 279.00, compare_at_price: 336.00,
     image_url: '/images/products/complete-ritual.png',
     description: 'Everything in the Radiance Set plus our Detoxifying Mud Mask for a weekly reset. The complete routine, bundled to save $57. Includes Vitamin C Cleanser, Serum, Day Cream, and Detoxifying Mud Mask.',
     how_to_use: 'Cleanse, serum, moisturizer daily. Use the mud mask 1–2× per week.',

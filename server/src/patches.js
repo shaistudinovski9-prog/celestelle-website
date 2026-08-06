@@ -34,6 +34,8 @@ const COLUMN_PATCHES = [
   // Catalog import: product detail fields from the source site.
   `ALTER TABLE products ADD COLUMN IF NOT EXISTS ingredients TEXT`,
   `ALTER TABLE products ADD COLUMN IF NOT EXISTS how_to_use TEXT`,
+  // Sale / "was" price — when set and above price, shown struck-through.
+  `ALTER TABLE products ADD COLUMN IF NOT EXISTS compare_at_price NUMERIC(10,2)`,
 ];
 
 async function seedSettings() {
@@ -74,10 +76,11 @@ async function importCatalog() {
   let inserted = 0;
   for (const p of CATALOG) {
     const r = await db.query(
-      `INSERT INTO products (slug, title, description, price, stock_qty, image_url, active, ingredients, how_to_use)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+      `INSERT INTO products (slug, title, description, price, compare_at_price, stock_qty, image_url, active, ingredients, how_to_use)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
        ON CONFLICT (slug) DO NOTHING`,
-      [p.slug, p.title, p.description, p.price, p.stock_qty, p.image_url, p.active, p.ingredients, p.how_to_use]
+      [p.slug, p.title, p.description, p.price, p.compare_at_price ?? null, p.stock_qty,
+       p.image_url, p.active, p.ingredients, p.how_to_use]
     );
     inserted += r.rowCount;
   }
@@ -88,6 +91,23 @@ async function importCatalog() {
   console.log(`  ✓ catalog import: ${inserted} product(s) seeded`);
 }
 
+// Backfill the bundle "was" prices onto already-seeded rows (the one-time import
+// guard means new columns don't reach existing prod data otherwise). Idempotent:
+// only fills where still null, so it never overrides an owner's later edit.
+async function backfillCompareAt() {
+  const bundles = [
+    ['starter-ritual', 207.00],
+    ['complete-ritual', 336.00],
+  ];
+  for (const [slug, wasPrice] of bundles) {
+    await db.query(
+      `UPDATE products SET compare_at_price = $1
+        WHERE slug = $2 AND compare_at_price IS NULL`,
+      [wasPrice, slug]
+    );
+  }
+}
+
 async function applyPatches() {
   for (const sql of COLUMN_PATCHES) {
     await db.query(sql);
@@ -95,6 +115,7 @@ async function applyPatches() {
   await seedSettings();
   await bootstrapAdmin();
   await importCatalog();
+  await backfillCompareAt();
 }
 
 module.exports = { applyPatches, importCatalog, DEFAULT_SETTINGS };

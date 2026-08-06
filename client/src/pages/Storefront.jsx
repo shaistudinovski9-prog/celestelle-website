@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api';
-import { priceLabel, inStock } from '../lib/products';
+import { priceLabel, inStock, hasCompareAt, savings, formatMoney } from '../lib/products';
 import StoreHeader from '../components/StoreHeader';
 import useDocumentTitle from '../hooks/useDocumentTitle';
 
@@ -45,7 +45,11 @@ export default function Storefront() {
                 </div>
                 <div className="product-body">
                   <div className="product-title">{p.title}</div>
-                  <div className="product-price">{priceLabel(p)}</div>
+                  <div className="product-price">
+                    {priceLabel(p)}
+                    {hasCompareAt(p) && <span className="was">{formatMoney(p.compare_at_price)}</span>}
+                  </div>
+                  {hasCompareAt(p) && <div className="save-badge">Save {formatMoney(savings(p))}</div>}
                   {!inStock(p) && <div className="muted">Sold out</div>}
                 </div>
               </Link>

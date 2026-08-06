@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import api from '../../api';
 
-const BLANK = { title: '', slug: '', description: '', price: '', stock_qty: '0', image_url: '', active: true };
+const BLANK = { title: '', slug: '', description: '', price: '', compare_at_price: '', stock_qty: '0', image_url: '', active: true };
 const BLANK_VARIANT = { label: '', sku: '', price_delta: '0', stock_qty: '0', active: true };
 
 export default function ProductEditor() {
@@ -23,7 +23,8 @@ export default function ProductEditor() {
       .then(({ data }) => {
         setForm({
           title: data.title || '', slug: data.slug || '', description: data.description || '',
-          price: String(data.price ?? ''), stock_qty: String(data.stock_qty ?? '0'),
+          price: String(data.price ?? ''), compare_at_price: data.compare_at_price != null ? String(data.compare_at_price) : '',
+          stock_qty: String(data.stock_qty ?? '0'),
           image_url: data.image_url || '', active: data.active,
         });
         setVariants((data.variants || []).map((v) => ({
@@ -96,6 +97,11 @@ export default function ProductEditor() {
                 <label>Stock (base)</label>
                 <input value={form.stock_qty} onChange={(e) => setField('stock_qty', e.target.value)} inputMode="numeric" />
               </div>
+            </div>
+            <div className="field">
+              <label>Compare-at / “was” price (USD, optional)</label>
+              <input value={form.compare_at_price} onChange={(e) => setField('compare_at_price', e.target.value)}
+                inputMode="decimal" placeholder="Leave blank for no sale price" />
             </div>
             <div className="field">
               <label>Image URL</label>

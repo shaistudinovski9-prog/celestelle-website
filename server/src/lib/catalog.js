@@ -70,6 +70,16 @@ function validateProduct(body = {}, { partial = false } = {}) {
     value.stock_qty = 0;
   }
 
+  if (body.compare_at_price !== undefined) {
+    if (body.compare_at_price === '' || body.compare_at_price === null) {
+      value.compare_at_price = null;              // blank clears the "was" price
+    } else {
+      const c = normalizeMoney(body.compare_at_price);
+      if (c == null) errors.push('invalid_compare_at');
+      else value.compare_at_price = c;
+    }
+  }
+
   if (body.description !== undefined) value.description = String(body.description || '');
   if (body.image_url !== undefined) value.image_url = String(body.image_url || '') || null;
   if (body.active !== undefined) value.active = !!body.active;

@@ -51,6 +51,12 @@ describe('validateProduct', () => {
     expect(errors).toContain('title_required');
     expect(errors).toContain('invalid_price');
   });
+  test('normalizes compare_at_price; blank clears it, garbage errors', () => {
+    expect(validateProduct({ title: 'X', price: '10', compare_at_price: '15' }).value.compare_at_price).toBe(15);
+    expect(validateProduct({ title: 'X', price: '10', compare_at_price: '' }, { partial: true }).value.compare_at_price).toBeNull();
+    expect(validateProduct({ title: 'X', price: '10', compare_at_price: 'abc' }).errors).toContain('invalid_compare_at');
+  });
+
   test('partial update omits unspecified fields and does not force defaults', () => {
     const { errors, value } = validateProduct({ price: '30' }, { partial: true });
     expect(errors).toEqual([]);
