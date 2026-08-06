@@ -16,7 +16,7 @@ services:
     name: celestelle-store
     runtime: node
     plan: free            # free web services spin down when idle; upgrade for always-on
-    branch: claude/celestelle-pos-audit-3rzeme   # change to `main` once you merge
+    branch: main
     healthCheckPath: /api/health
     buildCommand: npm run install:all && npm run build
     startCommand: npm start
