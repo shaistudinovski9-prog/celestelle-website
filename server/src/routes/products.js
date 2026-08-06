@@ -105,7 +105,7 @@ router.get('/', async (req, res) => {
 
 router.get('/:slug', async (req, res) => {
   const { rows } = await db.query(
-    `SELECT id, slug, title, description, price, stock_qty, image_url
+    `SELECT id, slug, title, description, price, stock_qty, image_url, ingredients, how_to_use
        FROM products WHERE slug = $1 AND active = TRUE`,
     [req.params.slug]
   );

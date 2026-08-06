@@ -100,6 +100,19 @@ export default function ProductDetail() {
               </button>
               <button className="btn-secondary" onClick={() => navigate('/cart')}>View cart</button>
             </div>
+
+            {product.how_to_use && (
+              <div className="pdp-detail">
+                <h3>How to use</h3>
+                <p className="muted">{product.how_to_use}</p>
+              </div>
+            )}
+            {product.ingredients && (
+              <div className="pdp-detail">
+                <h3>Ingredients</h3>
+                <p className="muted">{product.ingredients}</p>
+              </div>
+            )}
           </div>
         </div>
       </main>
