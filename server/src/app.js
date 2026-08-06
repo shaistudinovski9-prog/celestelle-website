@@ -14,6 +14,7 @@ function createApp() {
 
   app.use('/api/auth', require('./routes/auth'));
   app.use('/api/settings', require('./routes/settings'));
+  app.use('/api/products', require('./routes/products'));
 
   return app;
 }

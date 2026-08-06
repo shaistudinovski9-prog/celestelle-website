@@ -77,7 +77,7 @@ Two surfaces (unlike RBOS's staff-only app):
 ## Status
 
 - [x] Milestone 1 — skeleton, DB layer, settings, admin auth
-- [ ] Milestone 2 — catalog
+- [x] Milestone 2 — catalog (products + variants; admin CRUD; storefront grid + detail)
 - [ ] Milestone 3 — cart + checkout
 - [ ] Milestone 4 — fulfillment
 - [ ] Milestone 5 — shipping/tax + polish
