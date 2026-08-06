@@ -18,7 +18,9 @@ services:
     plan: free            # free web services spin down when idle; upgrade for always-on
     branch: claude/celestelle-pos-audit-3rzeme   # change to `main` once you merge
     healthCheckPath: /api/health
-    buildCommand: npm run install:all && npm run build
+    # NODE_ENV=production makes npm skip devDependencies, but the client build needs
+    # them (vite lives in devDependencies) — so force --include=dev for the client install.
+    buildCommand: npm install --prefix server && npm install --prefix client --include=dev && npm run build --prefix client
     startCommand: npm start
     envVars:
       - key: NODE_VERSION
