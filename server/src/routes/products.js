@@ -95,7 +95,7 @@ async function syncVariants(client, productId, incoming) {
 
 router.get('/', async (req, res) => {
   const { rows: products } = await db.query(
-    `SELECT id, slug, title, description, price, stock_qty, image_url
+    `SELECT id, slug, title, description, price, compare_at_price, stock_qty, image_url
        FROM products WHERE active = TRUE ORDER BY created_at DESC, id DESC`
   );
   const out = [];
@@ -105,7 +105,7 @@ router.get('/', async (req, res) => {
 
 router.get('/:slug', async (req, res) => {
   const { rows } = await db.query(
-    `SELECT id, slug, title, description, price, stock_qty, image_url, ingredients, how_to_use
+    `SELECT id, slug, title, description, price, compare_at_price, stock_qty, image_url, ingredients, how_to_use
        FROM products WHERE slug = $1 AND active = TRUE`,
     [req.params.slug]
   );
@@ -139,9 +139,9 @@ router.post('/', requireAdmin, async (req, res) => {
     const baseSlug = value.slug || slugify(value.title);
     const slug = await ensureUniqueSlug(client, baseSlug);
     const { rows } = await client.query(
-      `INSERT INTO products (slug, title, description, price, stock_qty, image_url, active)
-       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`,
-      [slug, value.title, value.description || '', value.price,
+      `INSERT INTO products (slug, title, description, price, compare_at_price, stock_qty, image_url, active)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id`,
+      [slug, value.title, value.description || '', value.price, value.compare_at_price ?? null,
        value.stock_qty ?? 0, value.image_url || null,
        value.active === undefined ? true : value.active]
     );
@@ -179,7 +179,7 @@ router.put('/:id', requireAdmin, async (req, res) => {
       value.slug = await ensureUniqueSlug(client, base, id);
     }
 
-    const fields = ['title', 'slug', 'description', 'price', 'stock_qty', 'image_url', 'active'];
+    const fields = ['title', 'slug', 'description', 'price', 'compare_at_price', 'stock_qty', 'image_url', 'active'];
     const sets = [];
     const params = [];
     for (const f of fields) {

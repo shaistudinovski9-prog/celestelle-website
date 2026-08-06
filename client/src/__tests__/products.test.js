@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import { effectiveUnitPrice, inStock, priceLabel, formatMoney } from '../lib/products';
+import { effectiveUnitPrice, inStock, priceLabel, formatMoney, hasCompareAt, savings } from '../lib/products';
 
 describe('effectiveUnitPrice', () => {
   test('base price with no variant', () => {
@@ -55,5 +55,19 @@ describe('formatMoney', () => {
   test('formats USD', () => {
     expect(formatMoney(19.5)).toBe('$19.50');
     expect(formatMoney(0)).toBe('$0.00');
+  });
+});
+
+describe('compare-at / savings', () => {
+  test('hasCompareAt only when compare price is above price', () => {
+    expect(hasCompareAt({ price: 179, compare_at_price: 207 })).toBe(true);
+    expect(hasCompareAt({ price: 179, compare_at_price: 179 })).toBe(false);
+    expect(hasCompareAt({ price: 179, compare_at_price: null })).toBe(false);
+    expect(hasCompareAt({ price: 179 })).toBe(false);
+  });
+  test('savings is the difference, else 0', () => {
+    expect(savings({ price: 179, compare_at_price: 207 })).toBe(28);
+    expect(savings({ price: 279, compare_at_price: 336 })).toBe(57);
+    expect(savings({ price: 89 })).toBe(0);
   });
 });

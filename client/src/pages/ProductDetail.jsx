@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import api from '../api';
-import { effectiveUnitPrice, inStock, formatMoney } from '../lib/products';
+import { effectiveUnitPrice, inStock, formatMoney, hasCompareAt, savings } from '../lib/products';
 import { useCart } from '../context/CartContext';
 import StoreHeader from '../components/StoreHeader';
 import useDocumentTitle from '../hooks/useDocumentTitle';
@@ -68,7 +68,15 @@ export default function ProductDetail() {
           </div>
           <div className="detail-info">
             <h1>{product.title}</h1>
-            <div className="product-price" style={{ fontSize: 22 }}>{formatMoney(unitPrice)}</div>
+            <div className="product-price" style={{ fontSize: 22 }}>
+              {formatMoney(unitPrice)}
+              {!hasVariants && hasCompareAt(product) && (
+                <>
+                  <span className="was">{formatMoney(product.compare_at_price)}</span>
+                  <span className="save-badge">Save {formatMoney(savings(product))}</span>
+                </>
+              )}
+            </div>
             {product.description && <p className="muted">{product.description}</p>}
 
             {hasVariants && (

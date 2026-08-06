@@ -32,4 +32,13 @@ describe('imported Celestelle catalog', () => {
   test('does not include the funnel-only intro duplicate', () => {
     expect(CATALOG.find((p) => p.slug === 'ritual-serum')).toBeUndefined();
   });
+
+  test('bundles carry a compare-at ("was") price above their sale price', () => {
+    for (const slug of ['starter-ritual', 'complete-ritual']) {
+      const p = CATALOG.find((x) => x.slug === slug);
+      expect(p.compare_at_price).toBeGreaterThan(p.price);
+    }
+    // non-bundles have no compare price
+    expect(CATALOG.find((p) => p.slug === 'vitamin-c-serum').compare_at_price).toBeUndefined();
+  });
 });

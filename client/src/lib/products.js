@@ -26,6 +26,18 @@ export function priceLabel(product) {
   return min === max ? formatMoney(min) : `${formatMoney(min)}–${formatMoney(max)}`;
 }
 
+// Does this product show a "was" price? Only when compare_at is above the price.
+export function hasCompareAt(product) {
+  const c = Number(product?.compare_at_price || 0);
+  return c > Number(product?.price || 0);
+}
+
+// Whole-dollar savings for the "save $X" label. 0 when no valid compare price.
+export function savings(product) {
+  if (!hasCompareAt(product)) return 0;
+  return round2(Number(product.compare_at_price) - Number(product.price));
+}
+
 export function formatMoney(value, currency = 'USD') {
   const n = Number(value || 0);
   try {
