@@ -1,0 +1,44 @@
+# Render Blueprint — provisions the Celestelle store (web service + Postgres).
+# In the Render dashboard: New → Blueprint → connect this repo. Render reads this
+# file and creates everything below. Values marked `sync: false` are secrets you
+# fill in the dashboard (Render won't store them in git).
+#
+# NOTE: this is a NEW, independent service from Royal Bee OS — its own URL and DB.
+
+databases:
+  - name: celestelle-db
+    databaseName: celestelle
+    user: celestelle
+    plan: free            # free Postgres expires after 90 days — upgrade before launch
+
+services:
+  - type: web
+    name: celestelle-store
+    runtime: node
+    plan: free            # free web services spin down when idle; upgrade for always-on
+    branch: claude/celestelle-pos-audit-3rzeme   # change to `main` once you merge
+    healthCheckPath: /api/health
+    buildCommand: npm run install:all && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: celestelle-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true          # Render generates a strong secret automatically
+      # --- you set these in the dashboard after the first deploy ---
+      - key: PUBLIC_URL
+        sync: false                  # set to your service URL, e.g. https://celestelle-store.onrender.com
+      - key: ADMIN_BOOTSTRAP_EMAIL
+        sync: false                  # first admin login — created once on boot
+      - key: ADMIN_BOOTSTRAP_PASSWORD
+        sync: false
+      - key: STRIPE_SECRET_KEY
+        sync: false                  # leave blank to launch storefront without checkout
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
