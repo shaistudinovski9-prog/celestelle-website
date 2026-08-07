@@ -33,7 +33,11 @@ async function sendEmail({ to, subject, text, html }) {
     if (!res.ok) {
       const body = await res.text().catch(() => '');
       console.error(`[mailer] send failed ${res.status}: ${body}`);
-      return { sent: false, status: res.status };
+      // Surface the provider's own message (e.g. Resend names the one address it
+      // will deliver to) so the admin test can show it verbatim.
+      let message = body;
+      try { message = JSON.parse(body).message || body; } catch { /* keep raw */ }
+      return { sent: false, status: res.status, error: (message || '').slice(0, 400) };
     }
     return { sent: true };
   } catch (err) {
