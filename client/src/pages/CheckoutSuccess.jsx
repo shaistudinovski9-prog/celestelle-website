@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import api from '../api';
 import { useCart } from '../context/CartContext';
-import StoreHeader from '../components/StoreHeader';
+import StoreLayout from '../components/StoreLayout';
 
 export default function CheckoutSuccess() {
   const [params] = useSearchParams();
@@ -39,9 +39,8 @@ export default function CheckoutSuccess() {
   }, [sessionId, clear]);
 
   return (
-    <div>
-      <StoreHeader storeName="Celestelle" />
-      <main className="container" style={{ maxWidth: 560 }}>
+    <StoreLayout footer={false}>
+      <main className="container" style={{ maxWidth: 560, padding: '48px 20px 90px' }}>
         <div className="card">
           {state === 'checking' && <><h1>Confirming your order…</h1><p className="muted">One moment.</p></>}
           {state === 'paid' && (
@@ -68,6 +67,6 @@ export default function CheckoutSuccess() {
           )}
         </div>
       </main>
-    </div>
+    </StoreLayout>
   );
 }

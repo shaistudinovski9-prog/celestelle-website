@@ -9,7 +9,7 @@ import { lineKey, subtotal as clientSubtotal, toCheckoutItems } from '../lib/car
 import { formatMoney } from '../lib/products';
 import { US_STATES, validateShipping } from '../lib/usStates';
 import useDocumentTitle from '../hooks/useDocumentTitle';
-import StoreHeader from '../components/StoreHeader';
+import StoreLayout from '../components/StoreLayout';
 
 const BLANK_ADDR = { name: '', line1: '', line2: '', city: '', state: '', postal_code: '' };
 
@@ -66,9 +66,8 @@ export default function Cart() {
   };
 
   return (
-    <div>
-      <StoreHeader storeName={store.store_name || 'Celestelle'} />
-      <main className="container" style={{ maxWidth: 720 }}>
+    <StoreLayout footer={false}>
+      <main className="container" style={{ maxWidth: 720, padding: '40px 20px 80px' }}>
         <h1>Your cart</h1>
         {items.length === 0 ? (
           <div className="card"><p className="muted">Your cart is empty.</p>
@@ -150,6 +149,6 @@ export default function Cart() {
           </>
         )}
       </main>
-    </div>
+    </StoreLayout>
   );
 }
