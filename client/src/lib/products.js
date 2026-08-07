@@ -38,6 +38,19 @@ export function savings(product) {
   return round2(Number(product.compare_at_price) - Number(product.price));
 }
 
+// Build a cart entry from a product row (+ optional selected variant).
+export function toCartEntry(product, variant = null) {
+  return {
+    product_id: product.id,
+    variant_id: variant ? variant.id : null,
+    title: variant ? `${product.title} — ${variant.label}` : product.title,
+    price: Number(product.price),
+    priceDelta: variant ? Number(variant.price_delta || 0) : 0,
+    slug: product.slug,
+    image_url: product.image_url,
+  };
+}
+
 export function formatMoney(value, currency = 'USD') {
   const n = Number(value || 0);
   try {
