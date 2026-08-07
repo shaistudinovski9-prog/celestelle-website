@@ -2,9 +2,25 @@
 const express = require('express');
 const db = require('../db');
 const settingsCache = require('../settingsCache');
+const mailer = require('../services/mailer');
 const { requireAdmin } = require('../middleware/auth');
 
 const router = express.Router();
+
+// Admin diagnostic — send a test email to confirm the mail provider works,
+// without needing to place an order. Surfaces the provider's exact result.
+router.post('/test-email', requireAdmin, async (req, res) => {
+  const to = String(req.body?.to || '').trim();
+  if (!to) return res.status(400).json({ error: 'to_required' });
+  const result = await mailer.sendEmail({
+    to,
+    subject: 'Celestelle test email ✅',
+    text: 'This is a test from your Celestelle store. If you can read this, email is working!',
+    html: '<div style="font-family:system-ui,sans-serif"><h2>Email is working! 🎉</h2>'
+      + '<p>This is a test from your <strong>Celestelle</strong> store. Nothing to do — you can ignore it.</p></div>',
+  });
+  res.json({ configured: mailer.isConfigured(), result });
+});
 
 // Public storefront-safe settings (no secrets). Used to render tax + store name.
 router.get('/public', async (req, res) => {

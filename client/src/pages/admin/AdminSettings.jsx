@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../api';
+import { useAuth } from '../../context/AuthContext';
 import { US_STATES } from '../../lib/usStates';
 
 const STORE_FIELDS = [
@@ -14,10 +15,38 @@ const STORE_FIELDS = [
 ];
 
 export default function AdminSettings() {
+  const { admin } = useAuth();
   const [settings, setSettings] = useState({});
   const [rules, setRules] = useState([]);
   const [savedMsg, setSavedMsg] = useState('');
   const [loading, setLoading] = useState(true);
+  const [testTo, setTestTo] = useState('');
+  const [testMsg, setTestMsg] = useState('');
+  const [testBusy, setTestBusy] = useState(false);
+
+  useEffect(() => { if (admin?.email) setTestTo(admin.email); }, [admin]);
+
+  const sendTest = async () => {
+    setTestMsg('');
+    setTestBusy(true);
+    try {
+      const { data } = await api.post('/settings/test-email', { to: testTo });
+      if (!data.configured) {
+        setTestMsg('⚠️ No email provider is set. Add RESEND_API_KEY in Render.');
+      } else if (data.result?.sent) {
+        setTestMsg(`✅ Sent to ${testTo}. Check that inbox (and spam).`);
+      } else if (data.result?.skipped) {
+        setTestMsg(`⚠️ Skipped (${data.result.reason}).`);
+      } else {
+        setTestMsg(`❌ Provider rejected it: ${data.result?.error || 'status ' + data.result?.status}. `
+          + `(The test sender only delivers to your own Resend email until you verify a domain.)`);
+      }
+    } catch {
+      setTestMsg('❌ Request failed. Is the site deployed with the latest code?');
+    } finally {
+      setTestBusy(false);
+    }
+  };
 
   useEffect(() => {
     Promise.all([api.get('/settings'), api.get('/settings/tax-rules')])
@@ -57,6 +86,21 @@ export default function AdminSettings() {
         {savedMsg && <div className="badge badge-green" style={{ marginBottom: 12 }}>{savedMsg}</div>}
 
         <div className="card">
+          <h2 style={{ marginTop: 0 }}>Email test</h2>
+          <p className="muted" style={{ fontSize: 13 }}>
+            Send yourself a test email to confirm your provider is working — no order needed.
+          </p>
+          <div className="field">
+            <label>Send test to</label>
+            <input type="email" value={testTo} onChange={(e) => setTestTo(e.target.value)} placeholder="you@email.com" />
+          </div>
+          <button className="btn" onClick={sendTest} disabled={testBusy || !testTo}>
+            {testBusy ? 'Sending…' : 'Send test email'}
+          </button>
+          {testMsg && <p style={{ marginTop: 10, fontSize: 14 }}>{testMsg}</p>}
+        </div>
+
+        <div className="card" style={{ marginTop: 16 }}>
           <h2 style={{ marginTop: 0 }}>Store</h2>
           {STORE_FIELDS.map(([key, lbl]) => (
             <div className="field" key={key}>
